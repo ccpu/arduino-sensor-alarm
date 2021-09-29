@@ -2,11 +2,13 @@
 
 Neotimer timer;
 
-int RELAY_PIN = 13;
+int RELAY_PIN = 12;
 int SENSOR_1 = 7; // vibration sensor
 bool SENSOR_ACTIVE = false;
 int ALARM_COUNT = 0;
-bool ALARMING_ACTIVE = false;
+int MAX_ALARM = 10;
+bool RELAY_ON = false;
+bool ALARM_ACTIVATION_PIN = 2;
 
 void setup()
 {
@@ -15,9 +17,17 @@ void setup()
   Serial.begin(9600);
   timer = Neotimer(1000);
   Serial.println("Ready");
+  delay(100);
+  digitalWrite(RELAY_PIN, HIGH);
 }
 void loop()
 {
+
+  // if (digitalRead(ALARM_ACTIVATION_PIN) == LOW)
+  // {
+  //   return;
+  // }
+
   long measurement = vibration();
   delay(50);
   if (measurement > 50)
@@ -25,9 +35,10 @@ void loop()
     SENSOR_ACTIVE = true;
     if (ALARM_COUNT == 0)
     {
+      alarmOn();
       timer.start();
     }
-    ALARM_COUNT = 10;
+    ALARM_COUNT = (MAX_ALARM * 2) - 1;
   }
 
   if (SENSOR_ACTIVE == true)
@@ -37,15 +48,13 @@ void loop()
       if (timer.done())
       {
 
-        if (ALARMING_ACTIVE)
+        if (RELAY_ON)
         {
-          ALARMING_ACTIVE = false;
-          digitalWrite(RELAY_PIN, LOW);
+          alarmOff();
         }
         else
         {
-          ALARMING_ACTIVE = true;
-          digitalWrite(RELAY_PIN, HIGH);
+          alarmOn();
         }
 
         ALARM_COUNT = ALARM_COUNT - 1;
@@ -55,11 +64,25 @@ void loop()
     }
     else
     {
-      SENSOR_ACTIVE = false;
-      ALARMING_ACTIVE = false;
-      digitalWrite(RELAY_PIN, LOW);
+      if (timer.done())
+      {
+        SENSOR_ACTIVE = false;
+        alarmOff();
+      }
     }
   }
+}
+
+void alarmOn()
+{
+  RELAY_ON = true;
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+void alarmOff()
+{
+  RELAY_ON = false;
+  digitalWrite(RELAY_PIN, HIGH);
 }
 
 long vibration()
