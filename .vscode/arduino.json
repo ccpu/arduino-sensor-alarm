@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "sensor-alarm.ino",
+    "port": "COM3"
+}
