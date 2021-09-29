@@ -5,9 +5,8 @@ Neotimer timer;
 int led = 13;
 int vs = 7; // vibration sensor
 bool active = false;
-int period = 1000;
-
 int alarm_count = 0;
+bool alarming = false;
 
 void setup()
 {
@@ -40,16 +39,22 @@ void loop()
         alarm_count = alarm_count - 1;
         Serial.println(alarm_count);
         timer.start();
-        digitalWrite(led, HIGH);
-      }
-      else
-      {
-        digitalWrite(led, LOW);
+        if (alarming)
+        {
+          alarming = false;
+          digitalWrite(led, LOW);
+        }
+        else
+        {
+          alarming = true;
+          digitalWrite(led, HIGH);
+        }
       }
     }
     else
     {
       active = false;
+      alarming = false;
       digitalWrite(led, LOW);
     }
   }
